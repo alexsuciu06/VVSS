@@ -11,9 +11,9 @@ import salariati.model.Employee;
 import salariati.repository.interfaces.EmployeeRepositoryInterface;
 import salariati.validator.EmployeeValidator;
 
-public class EmployeeImpl implements EmployeeRepositoryInterface {
+public class EmployeeRepositoryImpl implements EmployeeRepositoryInterface {
 	
-	private final String employeeDBFile = "employeeDB/employees.txt";
+	private final String employeeDBFile = "src/main/java/employeeDB/employees.txt";
 	private EmployeeValidator employeeValidator = new EmployeeValidator();
 
 	@Override
@@ -24,10 +24,15 @@ public class EmployeeImpl implements EmployeeRepositoryInterface {
 				bw = new BufferedWriter(new FileWriter(employeeDBFile, true));
 				bw.write(employee.toString());
 				bw.newLine();
-				bw.close();
 				return true;
 			} catch (IOException e) {
 				e.printStackTrace();
+			} finally {
+				try {
+					bw.close();
+				} catch (IOException ex) {
+					ex.printStackTrace();
+				}
 			}
 		}
 		return false;
@@ -35,13 +40,29 @@ public class EmployeeImpl implements EmployeeRepositoryInterface {
 
 	@Override
 	public void deleteEmployee(Employee employee) {
-		// TODO Auto-generated method stub
-		
+		List<Employee> all = getEmployeeList();
+		List<Employee> _new = new ArrayList<Employee>();
+		for (Employee e : all) {
+			if (!e.getCnp().equals(employee.getCnp())) {
+				_new.add(e);
+			}
+		}
+		this.writeEmployees(_new);
 	}
 
 	@Override
 	public void modifyEmployee(Employee oldEmployee, Employee newEmployee) {
-		// TODO Auto-generated method stub
+		if ( employeeValidator.isValid(newEmployee) ) {
+			List<Employee> all = getEmployeeList();
+			List<Employee> _new = new ArrayList<Employee>();
+			for (Employee e : all) {
+				if (!e.getCnp().equals(oldEmployee.getCnp())) {
+					_new.add(e);
+				}
+			}
+			_new.add(newEmployee);
+			this.writeEmployees(_new);
+		}
 		
 	}
 
@@ -55,7 +76,7 @@ public class EmployeeImpl implements EmployeeRepositoryInterface {
 			String line;
 			int counter = 0;
 			while ((line = br.readLine()) != null) {
-				Employee employee = new Employee();
+				Employee employee;
 				try {
 					employee = Employee.getEmployeeFromString(line, counter);
 					employeeList.add(employee);
@@ -79,12 +100,23 @@ public class EmployeeImpl implements EmployeeRepositoryInterface {
 		return employeeList;
 	}
 
-
-	@Override
-	public List<Employee> getEmployeeByCriteria(String criteria) {
-		List<Employee> employeeList = new ArrayList<Employee>();
-		
-		return employeeList;
+	private void writeEmployees(List<Employee> employees) {
+		BufferedWriter bw = null;
+		try {
+			bw = new BufferedWriter(new FileWriter(employeeDBFile, false));
+			for (Employee employee : employees) {
+				bw.write(employee.toString());
+				bw.newLine();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} finally {
+			try {
+				bw.close();
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 
 }
