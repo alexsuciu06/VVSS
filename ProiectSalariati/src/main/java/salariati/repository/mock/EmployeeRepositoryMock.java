@@ -50,7 +50,17 @@ public class EmployeeRepositoryMock implements EmployeeRepositoryInterface {
 
 	@Override
 	public void modifyEmployee(Employee oldEmployee, Employee newEmployee) {
-		// TODO Auto-generated method stub
+		if ( employeeValidator.isValid(newEmployee) ) {
+			List<Employee> all = getEmployeeList();
+			List<Employee> _new = new ArrayList<Employee>();
+			for (Employee e : all) {
+				if (!e.getCnp().equals(oldEmployee.getCnp())) {
+					_new.add(e);
+				}
+			}
+			_new.add(newEmployee);
+			this.employeeList = _new;
+		}
 	}
 
 	@Override
